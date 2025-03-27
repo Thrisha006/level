@@ -1,0 +1,33 @@
+# The workflow creates static website using aws s3
+name: AWS example workflow
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  BUCKET_NAME: "levelup46" # Change bucket name
+  AWS_REGION: " eu-north-1"
+  
+# Permission can be added at job level or workflow level
+permissions:
+  id-token: write  # This is required for requesting the JWT
+  contents: read   # This is required for actions/checkout
+
+jobs:
+  S3PackageUpload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::359375619332:role/thrisha  # Need to update with your role ARN
+          audience: sts.amazonaws.com
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload a file to AWS S3
+        run: |
+          aws s3 cp ./index.html s3://${{ env.BUCKET_NAME }}/ --acl public-read
